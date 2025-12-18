@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CSUN Map Quiz</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <h1>CSUN Map Quiz</h1>
+      <p class="sub">Double-click the map where you think the place is.</p>
+
+      <div class="stats">
+        <div class="statRow"><span>Round</span><strong id="roundText">1 / 5</strong></div>
+        <div class="statRow"><span>Find</span><strong id="targetText">Loading…</strong></div>
+        <div class="statRow"><span>Timer</span><strong id="timerText">0.0s</strong></div>
+        <div class="statRow"><span>High Score</span><strong id="highScoreText">—</strong></div>
+      </div>
+
+      <div id="message" class="message">Loading map…</div>
+
+      <div class="buttons">
+        <button id="resetBtn" type="button">Reset Game</button>
+        <button id="clearHighBtn" type="button">Clear High Score</button>
+      </div>
+
+      <h2>History</h2>
+      <ul id="history" class="history"></ul>
+
+      <div id="final" class="final hidden"></div>
+
+      <p class="tiny">
+        Note: This uses the built-in JS API Geocoder
+      </p>
+    </div>
+
+    <div class="mapWrap">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <script src="Project4.js"></script>
+
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCn2lwKkb3pi5mJ2vYceK6e-EZyzWR5LxQ&callback=initMap"
+    async defer></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3efe6;
+  color: black;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.panel {
+  width: 320px;
+  padding: 16px;
+  border-right: 2px solid darkslategray;
+  overflow: auto;
+  background: white;
+}
+
+h1 { margin: 0 0 6px; font-size: 22px; }
+.sub { margin: 0 0 12px; opacity: 0.8; }
+
+.stats {
+  background: white;
+  border: 1px solid darkslategray;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid darkslategray;
+}
+.statRow:last-child { border-bottom: none; }
+
+.message {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #2a78b8;
+  color: white;
+  min-height: 44px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: black;
+  color: white;
+}
+button:hover { opacity: 0.92; }
+
+.mapWrap {
+  flex: 1;
+  padding: 10px;
+}
+
+#map {
+  width: 100%;
+  height: calc(100vh - 20px);
+  border-radius: 12px;
+  border: 2px solid darkslategray;
+}
+
+.history {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.history li {
+  background: white;
+  border: 1px solid darkslategray;
+  border-radius: 10px;
+  padding: 8px;
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.final {
+  margin-top: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid darkslategray;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hidden { display: none; }
+
+.tiny {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 10px;
+}
