@@ -1,12 +1,3 @@
-// CSUN Map Quiz (COMP 484)
-// Requirements hit:
-// - dblclick to guess a prompted location
-// - show correct area as a rectangle (green if correct, red if wrong)
-// - 5 total locations (1 assigned + 4 chosen)
-// - map panning/zooming OFF
-// Extras: timer + high score stored in localStorage
-// (Project spec: :contentReference[oaicite:6]{index=6})
-
 let map;
 let geocoder;
 
@@ -37,7 +28,7 @@ document.getElementById("resetBtn").addEventListener("click", resetGame);
 document.getElementById("clearHighBtn").addEventListener("click", () => {
   localStorage.removeItem("csunMapQuizHighScore");
   renderHighScore();
-  setMessage("High score erased. The universe forgets. You don’t have to.");
+  setMessage("High score reset!");
 });
 
 const locations = [
@@ -50,12 +41,12 @@ const locations = [
 
 // Called by Google Maps script callback
 window.initMap = function initMap() {
-  geocoder = new google.maps.Geocoder();
+  geocoder = new google.maps.Geocoder(); // geocoder instance to translate building names into coordinates
 
-  // center
+  // approximate CSUN center
   const csunCenter = { lat: 34.2400, lng: -118.5290 };
 
-  // Campus bounds for map fitting on screen
+  // Campus bounds for map display area
   const campusBounds = {
     north: 34.2910,
     south: 34.2315,
@@ -63,12 +54,13 @@ window.initMap = function initMap() {
     west: -118.5425
   };
 
+  // creates map and interaction settings
   map = new google.maps.Map(document.getElementById("map"), {
     center: csunCenter,
     zoom: 5,
     mapTypeId: "roadmap",
 
-    // Turn off user controls (required)
+    // User controls
     disableDefaultUI: true,
     draggable: false,
     scrollwheel: false,
@@ -76,7 +68,7 @@ window.initMap = function initMap() {
     gestureHandling: "none",
     keyboardShortcuts: false,
 
-    // Restrict the view area
+    // Restrict the view area to keep user in same area
     restriction: {
       latLngBounds: campusBounds,
       strictBounds: true
@@ -90,7 +82,7 @@ window.initMap = function initMap() {
     handleGuess(e.latLng);
   });
 
-  renderHighScore();
+  renderHighScore();  //high score functionality TODO
   startGame();
 };
 
@@ -109,13 +101,15 @@ function startGame() {
 function resetGame() {
   stopTimer();
   startGame();
-  setMessage("Reset. Same campus. New fate.");
+  setMessage("Game reset!");
 }
 
+// Loads next round of quiz and updates geocode and text for next target building guess
 function loadRound() {
-  answerLocked = false;
+  answerLocked = false; // reset after every guess to allow for new guess
   clearMapFeedback();
 
+  // Update on screen information
   if (roundIndex >= totalRounds) {
     endGame();
     return;
@@ -125,9 +119,9 @@ function loadRound() {
   roundText.textContent = `${roundIndex + 1} / ${totalRounds}`;
   targetText.textContent = loc.name;
 
-  setMessage(`Round ${roundIndex + 1}: Find ${loc.name}. Double-click your guess.`);
+  setMessage(`Make your guess!`);
 
-  // Convert the building name/address to a LatLng using the JS API Geocoder
+  // Convert the building name/address to a LatLng using the JS API Geocoder error check
   geocoder.geocode({ address: loc.address }, (results, status) => {
     if (status !== "OK" || !results || !results[0]) {
       setMessage("Geocoder failed. Check API key + that Geocoding is enabled.");
@@ -152,8 +146,9 @@ function loadRound() {
   });
 }
 
+// Handle and check user's guess compared to defined "correct area"
 function handleGuess(latLng) {
-  answerLocked = true;
+  answerLocked = true; // 1 guess per round
 
   // marker where user clicked
   if (clickMarker) clickMarker.setMap(null);
@@ -163,28 +158,28 @@ function handleGuess(latLng) {
     title: "Your Guess"
   });
 
-  const isCorrect = currentTarget.bounds.contains(latLng);
+  const isCorrect = currentTarget.bounds.contains(latLng); // Guess within "correct area" rectangle?
 
-  // Show rectangle: green if correct, red if wrong (project requirement)
-  // :contentReference[oaicite:8]{index=8}
+  // Show green or red rectangle based on correct vs incorrect
   drawAnswerRectangle(currentTarget.bounds, isCorrect);
 
   if (isCorrect) {
     correctCount++;
-    setMessage("Correct. Your instincts are terrifyingly good.");
+    setMessage("Correct!");
     addHistoryItem(currentTarget.name, true);
   } else {
-    setMessage("Wrong. The map does not forgive… but it does reveal.");
+    setMessage("Incorrect!");
     addHistoryItem(currentTarget.name, false);
   }
 
-  // Move to next round after a short pause (so user sees the rectangle)
+  // Delay between user selections and result showings
   setTimeout(() => {
     roundIndex++;
     loadRound();
   }, 1200);
 }
 
+// Actually draws and displays rectangle and color based off correct vs incorrect
 function drawAnswerRectangle(bounds, correct) {
   if (activeRect) activeRect.setMap(null);
 
@@ -193,16 +188,15 @@ function drawAnswerRectangle(bounds, correct) {
     strokeOpacity: 0.9,
     strokeWeight: 2,
     fillOpacity: 0.20,
-    // Just keep it simple and explicit:
     strokeColor: correct ? "#1b7f3a" : "#b32020",
     fillColor: correct ? "#1b7f3a" : "#b32020",
     map: map
   });
 }
 
+// Result history using dynamic DOM element
 function addHistoryItem(name, correct) {
-  // Using createElement + appendChild (clean DOM building style from lecture)
-  // :contentReference[oaicite:9]{index=9}
+  // Using createElement + appendChild
   const li = document.createElement("li");
   const text = document.createTextNode(`${correct ? "✅" : "❌"} ${name}`);
   li.appendChild(text);
@@ -220,15 +214,16 @@ function endGame() {
 
   setMessage(`Game over. ${scoreText}`);
 
-  // Save high score: prefer more correct; tiebreaker = faster time
+  // Save high score
   const prev = getHighScore();
-  const current = { correct: correctCount, seconds: timeSec };
+  const current = { correct: correctCount, seconds: timeSec }; // tiebreaker looks at time
 
   let beat = false;
   if (!prev) beat = true;
   else if (current.correct > prev.correct) beat = true;
   else if (current.correct === prev.correct && current.seconds < prev.seconds) beat = true;
 
+  // Set a new highscore if the new score is higher than current highscore
   if (beat) {
     localStorage.setItem("csunMapQuizHighScore", JSON.stringify(current));
     setMessage(`New high score: ${correctCount}/${totalRounds} in ${timeSec.toFixed(1)}s. Respect.`);
@@ -237,15 +232,18 @@ function endGame() {
   renderHighScore();
 }
 
+// Clears map of markers made with previous guesses and corrections
 function clearMapFeedback() {
   if (clickMarker) { clickMarker.setMap(null); clickMarker = null; }
   if (activeRect) { activeRect.setMap(null); activeRect = null; }
 }
 
+// Function for displaying messages to user
 function setMessage(text) {
   messageEl.textContent = text;
 }
 
+// Extra functionality that starts timer that updates ever 100 ms to track how long it takes user to guess
 function startTimer() {
   startTimeMs = Date.now();
   if (timerInterval) clearInterval(timerInterval);
@@ -256,6 +254,7 @@ function startTimer() {
   }, 100);
 }
 
+// Stops timer after final guess or refresh
 function stopTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -263,6 +262,7 @@ function stopTimer() {
   }
 }
 
+// Grabs highscore from DOM
 function getHighScore() {
   const raw = localStorage.getItem("csunMapQuizHighScore");
   if (!raw) return null;
@@ -273,6 +273,7 @@ function getHighScore() {
   }
 }
 
+// Displays high score
 function renderHighScore() {
   const hs = getHighScore();
   if (!hs) {
